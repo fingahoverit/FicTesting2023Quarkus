@@ -179,6 +179,112 @@ public class ProductInBasketResourceTest {
          assertThat(firstProductInBasketList.quantity).isEqualTo(2);
     }
 
+    @Test
+    public void givenOneEmptyBasketWhenIAddTwoDifferentProductsInBasketThenTheBasketsShouldContainTwoRowsForTheTwoProductsWithAQuantityOfOne () {
+         // Create the first ProductInBasket
+         var firstProductInBasketDTO = createEntity();
+         firstProductInBasketDTO = given()
+         .auth()
+         .preemptive()
+         .oauth2(adminToken)
+         .contentType(APPLICATION_JSON)
+         .accept(APPLICATION_JSON)
+         .body(firstProductInBasketDTO)
+         .when()
+         .post("/api/product-in-baskets")
+         .then()
+         .statusCode(CREATED.getStatusCode())
+         .extract().as(ENTITY_TYPE);
+
+         // Create the second ProductInBasket
+         var secondProductInBasketDTO = createEntity();
+         secondProductInBasketDTO.productId = 2L;
+         secondProductInBasketDTO = given()
+         .auth()
+         .preemptive()
+         .oauth2(adminToken)
+         .contentType(APPLICATION_JSON)
+         .accept(APPLICATION_JSON)
+         .body(secondProductInBasketDTO)
+         .when()
+         .post("/api/product-in-baskets")
+         .then()
+         .statusCode(CREATED.getStatusCode())
+         .extract().as(ENTITY_TYPE);
+
+         var productInBasketDTOList = given()
+         .auth()
+         .preemptive()
+         .oauth2(adminToken)
+         .accept(APPLICATION_JSON)
+         .when()
+         .get("/api/product-in-baskets")
+         .then()
+         .statusCode(OK.getStatusCode())
+         .contentType(APPLICATION_JSON)
+         .extract().as(LIST_OF_ENTITY_TYPE);
+
+         assertThat(productInBasketDTOList).hasSize(2);
+         var firstProductInBasketList = productInBasketDTOList.stream().filter(it -> it.productId == 1L).findFirst().get();
+         assertThat(firstProductInBasketList.quantity).isEqualTo(1);
+         var secondProductInBasketList = productInBasketDTOList.stream().filter(it -> it.productId == 2L).findFirst().get();
+         assertThat(secondProductInBasketList.quantity).isEqualTo(1);
+    }
+
+    @Test
+    public void givenTwoEmptyBasketsWhenIAddTheSameProductToBothBasketsThenTheTwoBasketsShouldContainOnlyOneRowWithAQuantityOfOne() {
+         // Create the first ProductInBasket
+         var firstProductInBasketDTO = createEntity();
+         firstProductInBasketDTO = given()
+         .auth()
+         .preemptive()
+         .oauth2(adminToken)
+         .contentType(APPLICATION_JSON)
+         .accept(APPLICATION_JSON)
+         .body(firstProductInBasketDTO)
+         .when()
+         .post("/api/product-in-baskets")
+         .then()
+         .statusCode(CREATED.getStatusCode())
+         .extract().as(ENTITY_TYPE);
+
+         // Create the second ProductInBasket
+         var secondProductInBasketDTO = createEntity();
+         secondProductInBasketDTO.basketId = 2L;
+         secondProductInBasketDTO = given()
+         .auth()
+         .preemptive()
+         .oauth2(adminToken)
+         .contentType(APPLICATION_JSON)
+         .accept(APPLICATION_JSON)
+         .body(secondProductInBasketDTO)
+         .when()
+         .post("/api/product-in-baskets")
+         .then()
+         .statusCode(CREATED.getStatusCode())
+         .extract().as(ENTITY_TYPE);
+
+         var productInBasketDTOList = given()
+         .auth()
+         .preemptive()
+         .oauth2(adminToken)
+         .accept(APPLICATION_JSON)
+         .when()
+         .get("/api/product-in-baskets")
+         .then()
+         .statusCode(OK.getStatusCode())
+         .contentType(APPLICATION_JSON)
+         .extract().as(LIST_OF_ENTITY_TYPE);
+
+         System.out.println(productInBasketDTOList);
+         assertThat(productInBasketDTOList).hasSize(2);
+         var firstProductInBasketList = productInBasketDTOList.stream().filter(it -> it.basketId == 1L).findFirst().get();
+         assertThat(firstProductInBasketList.quantity).isEqualTo(1);
+         assertThat(firstProductInBasketList.basketId).isEqualTo(1);
+         var secondProductInBasketList = productInBasketDTOList.stream().filter(it -> it.basketId == 2L).findFirst().get();
+         assertThat(secondProductInBasketList.quantity).isEqualTo(1);
+         assertThat(secondProductInBasketList.basketId).isEqualTo(2);
+    }
 
     @Test
     public void createProductInBasketWithExistingId() {
