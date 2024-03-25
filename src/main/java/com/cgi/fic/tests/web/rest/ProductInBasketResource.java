@@ -51,7 +51,7 @@ public class ProductInBasketResource {
         if (productInBasketDTO.id != null) {
             throw new BadRequestAlertException("A new productInBasket cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        var result = productInBasketService.persistOrUpdate(productInBasketDTO);
+        var result = productInBasketService.addProductToBasket(productInBasketDTO);
         var response = Response.created(fromPath(uriInfo.getPath()).path(result.id.toString()).build()).entity(result);
         HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.id.toString()).forEach(response::header);
         return response.build();

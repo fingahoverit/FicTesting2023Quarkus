@@ -24,8 +24,28 @@ public class ProductInBasketService {
     ProductInBasketMapper productInBasketMapper;
 
     @Transactional
+    public ProductInBasketDTO addProductToBasket(ProductInBasketDTO productInBasketDTO) {
+        log.debug("Request to Add product to ProductInBasket : {}", productInBasketDTO);
+
+        List<ProductInBasketDTO> pibList = findAllProductsInBasket(productInBasketDTO.basketId);
+
+        for (ProductInBasketDTO pib : pibList) {
+            if (pib.productId == productInBasketDTO.productId) {
+                productInBasketDTO.id = pib.id;
+                productInBasketDTO.quantity += 1;
+                break;
+            }
+        }
+
+        var productInBasket = productInBasketMapper.toEntity(productInBasketDTO);
+        productInBasket = ProductInBasket.persistOrUpdate(productInBasket);
+        return productInBasketMapper.toDto(productInBasket);
+    }
+
+    @Transactional
     public ProductInBasketDTO persistOrUpdate(ProductInBasketDTO productInBasketDTO) {
         log.debug("Request to save ProductInBasket : {}", productInBasketDTO);
+
         var productInBasket = productInBasketMapper.toEntity(productInBasketDTO);
         productInBasket = ProductInBasket.persistOrUpdate(productInBasket);
         return productInBasketMapper.toDto(productInBasket);
@@ -53,19 +73,29 @@ public class ProductInBasketService {
     public Optional<ProductInBasketDTO> findOne(Long id) {
         log.debug("Request to get ProductInBasket : {}", id);
         return ProductInBasket.findByIdOptional(id)
-            .map(productInBasket -> productInBasketMapper.toDto((ProductInBasket) productInBasket)); 
+                .map(productInBasket -> productInBasketMapper.toDto((ProductInBasket) productInBasket));
     }
 
     /**
      * Get all the productInBaskets.
+     * 
      * @return the list of entities.
      */
-    public  List<ProductInBasketDTO> findAll() {
+    public List<ProductInBasketDTO> findAllProductsInBasket(Long id) {
+        log.debug("Request to get all ProductInBaskets of a basket");
+        List<ProductInBasket> productInBaskets = ProductInBasket.find("basket_id", id).list();
+        return productInBasketMapper.toDto(productInBaskets);
+    }
+
+    /**
+     * Get all the productInBaskets.
+     * 
+     * @return the list of entities.
+     */
+    public List<ProductInBasketDTO> findAll() {
         log.debug("Request to get all ProductInBaskets");
         List<ProductInBasket> productInBaskets = ProductInBasket.findAll().list();
         return productInBasketMapper.toDto(productInBaskets);
     }
-
-
 
 }
